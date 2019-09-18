@@ -144,3 +144,33 @@ describe 'Paginating mixin', ->
 
       it 'should have new items', ->
         expect(view.$ '.test-item').to.exist
+    
+    context 'when count is equal to maxItems', ->
+      promise = null
+
+      beforeEach ->
+        promise = collection.fetchWithQuery {page: 1}, async: yes
+        sandbox.server.respondWith [200, {}, JSON.stringify {
+          count: 100
+          itemsList: ({} for i in [0..100])
+        }]
+        sandbox.server.respond()
+        promise
+
+      it 'should render range string', ->
+        expect(view.$ '.pagination-range').to.have.text '1-10 of 100'
+
+    context 'when count is less than maxItems', ->
+      promise = null
+
+      beforeEach ->
+        promise = collection.fetchWithQuery {page: 1}, async: yes
+        sandbox.server.respondWith [200, {}, JSON.stringify {
+          count: 5
+          itemsList: ({} for i in [0..5])
+        }]
+        sandbox.server.respond()
+        promise
+
+      it 'should render range string', ->
+        expect(view.$ '.pagination-range').to.have.text '1-5 of 5'

@@ -47,9 +47,7 @@ class Paginating extends Routing superclass
 
   getRangeString: (page, perPage, info) ->
     maxItems = info.pages * perPage
-    max =
-      if info.count is maxItems then info.count
-      else Math.min info.count, page * perPage
+    max = Math.min info.count, page * perPage
     min = (page - 1) * perPage + 1
     min = Math.min min, max
     @getStats min, max, info
