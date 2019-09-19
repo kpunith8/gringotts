@@ -46,7 +46,6 @@ class Paginating extends Routing superclass
       "#{[min, max].join '-'} of #{info.count}"
 
   getRangeString: (page, perPage, info) ->
-    maxItems = info.pages * perPage
     max = Math.min info.count, page * perPage
     min = (page - 1) * perPage + 1
     min = Math.min min, max

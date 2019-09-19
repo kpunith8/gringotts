@@ -23,12 +23,13 @@ class PaginatingViewMock extends Templatable Paginating Chaplin.CollectionView
   listSelector: 'tbody'
   template: templateMock
 
-
 describe 'Paginating mixin', ->
   sandbox = null
   collection = null
   view = null
   infinite = false
+  count = 101
+  itemList = ({} for i in [0..101])
 
   beforeEach ->
     sandbox = sinon.createSandbox useFakeServer: true
@@ -39,8 +40,8 @@ describe 'Paginating mixin', ->
     view = new PaginatingViewMock {routeName: 'test', collection}
     sandbox.server.respondWith [200, {}, JSON.stringify {
       next_page_id: 'abcdef'
-      count: 101
-      itemsList: ({} for i in [0..101])
+      count: count
+      itemsList: itemList
     }]
     p = collection.fetchWithQuery {bad: 'something'}, async: true
     sandbox.server.respond()
@@ -99,6 +100,22 @@ describe 'Paginating mixin', ->
     it 'should render range string', ->
       expect(view.$ '.pagination-range').to.have.text '101-101 of 101'
 
+  context 'when count is equal to number of pages * page count', ->
+    before ->
+      count = 100
+      itemsList = ({} for i in [0..100])
+
+    it 'should render range string', ->
+      expect(view.$ '.pagination-range').to.have.text '1-10 of 100'
+  
+  context 'when count is less than the number of pages * page count', ->
+    before ->
+      count = 5
+      itemsList = ({} for i in [0..5])
+    
+    it 'should render range string', ->
+      expect(view.$ '.pagination-range').to.have.text '1-5 of 5'
+
   context 'infinite pagination', ->
     before ->
       infinite = true
@@ -144,33 +161,3 @@ describe 'Paginating mixin', ->
 
       it 'should have new items', ->
         expect(view.$ '.test-item').to.exist
-    
-    context 'when count is equal to maxItems', ->
-      promise = null
-
-      beforeEach ->
-        promise = collection.fetchWithQuery {page: 1}, async: yes
-        sandbox.server.respondWith [200, {}, JSON.stringify {
-          count: 100
-          itemsList: ({} for i in [0..100])
-        }]
-        sandbox.server.respond()
-        promise
-
-      it 'should render range string', ->
-        expect(view.$ '.pagination-range').to.have.text '1-10 of 100'
-
-    context 'when count is less than maxItems', ->
-      promise = null
-
-      beforeEach ->
-        promise = collection.fetchWithQuery {page: 1}, async: yes
-        sandbox.server.respondWith [200, {}, JSON.stringify {
-          count: 5
-          itemsList: ({} for i in [0..5])
-        }]
-        sandbox.server.respond()
-        promise
-
-      it 'should render range string', ->
-        expect(view.$ '.pagination-range').to.have.text '1-5 of 5'
